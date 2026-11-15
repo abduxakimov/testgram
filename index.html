@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#3390ec">
+<title>TestGram</title>
+</head>
+<body>
+
+
+<!-- ============ KIRISH ============ -->
+<div id="auth" class="auth hidden">
+  <div class="auth-card">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M20.7 3.3 2.9 10.2c-1.2.5-1.2 1.2-.2 1.5l4.6 1.4 1.8 5.4c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-14.2c.3-1.2-.5-1.8-1.6-1.3zM8.6 13.5l9.6-6.1c.5-.3.9-.1.5.2l-8.2 7.4-.3 3.4-1.6-4.9z"/></svg></div>
+    <h1 id="aTitle">TestGram</h1>
+    <p id="aSub"></p>
+
+    <div id="sCfg" class="hidden">
+      <div class="field"><label>API ID</label><input id="apiId" inputmode="numeric" placeholder="1234567"></div>
+      <div class="field"><label>API Hash</label><input id="apiHash" placeholder="32 belgili kod"></div>
+      <button class="btn" onclick="saveCfg()">Davom etish</button>
+    </div>
+
+    <div id="sPhone" class="hidden">
+      <div class="field"><label>Telefon raqam</label><input id="phone" type="tel" value="+998 " autocomplete="tel"></div>
+      <button class="btn" onclick="sendCode()">Kod yuborish</button>
+      <button class="link-btn" onclick="resetCfg()">API sozlamasini o'zgartirish</button>
+    </div>
+
+    <div id="sCode" class="hidden">
+      <div class="field"><label>Kod</label><input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
+      <button class="btn" onclick="signIn()">Kirish</button>
+      <button class="link-btn" onclick="step('phone')">Raqamni o'zgartirish</button>
+    </div>
+
+    <div id="sPass" class="hidden">
+      <div class="field"><label>Ikki bosqichli parol</label><input id="pass" type="password"></div>
+      <button class="btn" onclick="sendPass()">Kirish</button>
+    </div>
+
+    <div class="err" id="aErr"></div>
+  </div>
+</div>
+
+<!-- ============ ILOVA ============ -->
+<div id="app" class="app hidden">
+  <aside class="side">
+    <div class="side-top">
+      <button class="icon-btn" title="Yangilash" onclick="loadDialogs()">⟳</button>
+      <input id="search" class="search" placeholder="Qidirish" oninput="renderList()">
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-f="all">Hammasi</button>
+      <button class="tab" data-f="group">Guruhlar</button>
+      <button class="tab" data-f="channel">Kanallar</button>
+      <button class="tab" data-f="user">Shaxsiy</button>
+      <button class="tab" data-f="bot">Botlar</button>
+    </div>
+    <div class="list" id="list"><div class="loader">Yuklanmoqda…</div></div>
+    <div class="me">
+      <div class="av sm" id="meAv"></div>
+      <div class="n" id="meName"></div>
+      
+      <button class="icon-btn" title="Chiqish" onclick="logout()">⎋</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="empty" class="empty">Testlarni yuklash uchun chatni tanlang</div>
+    <div id="head" class="head hidden">
+      <button class="icon-btn back" onclick="closeChat()">←</button>
+      <div class="av sm" id="hAv"></div>
+      <div class="t"><b id="hTitle"></b><small id="hSub"></small></div>
+      <button class="export-btn" onclick="openExport()">📥 <span>Testlarni yuklash</span></button>
+    </div>
+    <div id="msgs" class="msgs hidden"></div>
+  </main>
+</div>
+
+<!-- ============ EKSPORT OYNASI ============ -->
+<div id="modal" class="modal hidden" onclick="if(event.target===this&&!window.busy)closeModal()">
+  <div class="mbox">
+    <div id="mForm">
+      <h2>Testlarni yuklash</h2>
+      <div class="sub" id="mChat"></div>
+      <label class="chk"><input type="checkbox" value="polls" checked> 📊 Viktorina va so'rovnomalar → Excel</label>
+      <label class="chk"><input type="checkbox" value="files" checked> 📎 Fayllar (PDF, Word, Excel…)</label>
+      <label class="chk"><input type="checkbox" value="photos" checked> 🖼 Rasmlar</label>
+      <label class="chk"><input type="checkbox" value="texts" checked> 💬 Matnli xabarlar → Excel</label>
+      <div class="field"><label>Oxirgi nechta xabar</label><input id="mLimit" inputmode="numeric" placeholder="Bo'sh = hammasi"></div>
+      <div class="field"><label>Fayl turlari</label><input id="mExt" placeholder="masalan: pdf, docx, xlsx"></div>
+      <div class="hint">Bo'sh qoldirsangiz, barcha fayllar yuklanadi.</div>
+      <div class="field"><label>Kalit so'z bo'yicha filtr</label><input id="mKey" placeholder="masalan: BSB, 7-sinf, matematika"></div>
+      <div class="row">
+        <button class="btn ghost" onclick="closeModal()">Bekor qilish</button>
+        <button class="btn" onclick="startExport()">Boshlash</button>
+      </div>
+    </div>
+    <div id="mProg" class="hidden">
+      <h2 id="pTitle">Yuklanmoqda…</h2>
+      <div class="sub" id="pSub"></div>
+      <div class="bar"><i id="pBar"></i></div>
+      <div class="stats">
+        <div><b id="nPolls">0</b><span>test</span></div>
+        <div><b id="nFiles">0</b><span>fayl</span></div>
+        <div><b id="nPhotos">0</b><span>rasm</span></div>
+        <div><b id="nTexts">0</b><span>matn</span></div>
+      </div>
+      <div class="err" id="pErr"></div>
+      <div class="dl-links" id="pLinks"></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="toast" class="toast hidden"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

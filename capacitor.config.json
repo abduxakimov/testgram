@@ -1,0 +1,6 @@
+{
+  "appId": "uz.testgram.app",
+  "appName": "TestGram",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false }
+}
